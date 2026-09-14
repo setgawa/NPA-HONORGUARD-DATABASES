@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>外務課儀仗隊　隊務管理</title>
+<style>
+:root{
+  color-scheme:light;
+  --ji:#16181a; --ji-usu:#5d6169;
+  --kami:#fbfbf9; --toji:#e6e7e2; --shiro:#ffffff;
+  --kei:#b9bcb4; --kei-usu:#dcded8;
+  --hover:#f1f1ed; --grp:#eeefe9; --grp-h:#e2e3dc; --mukan:#f2f2ee;
+  --ai:#16181a;                 /* 差し色は置かず墨で通す */
+  --main-fg:#ffffff; --main-h:#3a3e43;
+  --shu:#8a2417; --shu-usu:#f4e9e7; --shu-kei:#cfa9a2;
+  --sel:#dfe4dc; --sel-kei:#8d9a86;
+  --toast-bg:#16181a; --toast-fg:#ffffff;
+}
+[data-theme="dark"]{
+  color-scheme:dark;
+  /* 夜間表示：用紙面 #242424 を基準に、全色を無彩色で組む */
+  --ji:#e3e3e3; --ji-usu:#969696;
+  --kami:#242424; --toji:#1a1a1a; --shiro:#1f1f1f;
+  --kei:#4d4d4d; --kei-usu:#353535;
+  --hover:#2e2e2e; --grp:#2f2f2f; --grp-h:#3a3a3a; --mukan:#1f1f1f;
+  --ai:#e3e3e3;
+  --main-fg:#242424; --main-h:#c4c4c4;
+  --shu:#c87a5f; --shu-usu:#32211f; --shu-kei:#8a5849;
+  --sel:#343434; --sel-kei:#757575;
+  --toast-bg:#e3e3e3; --toast-fg:#242424;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--toji); color:var(--ji);
+  font-family:"游ゴシック Medium","Yu Gothic Medium","游ゴシック","Yu Gothic","Hiragino Kaku Gothic ProN",sans-serif;
+  font-size:14px; line-height:1.7; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"游明朝","Yu Mincho","YuMincho","Hiragino Mincho ProN",serif;font-weight:600}
+
+.hd{background:var(--kami);border-bottom:1px solid var(--kei);padding:18px 28px 0}
+.hd-in{max-width:1240px;margin:0 auto}
+.hd-top{display:flex;align-items:flex-start;gap:16px}
+.hd h1{font-size:21px;margin:0;letter-spacing:.14em}
+.hd .sub{font-size:11.5px;color:var(--ji-usu);margin:2px 0 14px;letter-spacing:.04em}
+#btn-theme{margin-left:auto;flex:none}
+
+.tabs{display:flex;flex-wrap:wrap;align-items:flex-end}
+.tab{font-family:inherit;font-size:13.5px;background:none;border:0;border-bottom:2px solid transparent;
+  padding:8px 17px 10px;cursor:pointer;color:var(--ji-usu);letter-spacing:.06em;white-space:nowrap}
+.tab:hover{color:var(--ji)}
+.tab[aria-selected="true"]{color:var(--ai);border-bottom-color:var(--ai);font-weight:600}
+.tab:focus-visible{outline:2px solid var(--ai);outline-offset:-2px}
+.tab-sep{width:1px;align-self:stretch;background:var(--kei);margin:6px 12px 8px}
+.tab.shinsetsu{color:var(--ji-usu);font-size:12.5px;padding:8px 12px 10px}
+.tab.shinsetsu:hover{color:var(--ai)}
+
+main{max-width:1240px;margin:0 auto;padding:24px 28px 80px}
+.sheet{background:var(--kami);border:1px solid var(--kei);padding:22px 24px 26px;margin-bottom:20px}
+.sheet > h2{font-size:15.5px;margin:0 0 3px;letter-spacing:.1em}
+.sheet > .note{font-size:11.5px;color:var(--ji-usu);margin:0 0 10px}
+h3.sub-h{font-size:13.5px;margin:26px 0 10px;letter-spacing:.08em;border-bottom:1px solid var(--kei);padding-bottom:5px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.spacer{flex:1}
+.tally{font-size:12px;color:var(--ji-usu)}
+
+button.act{font-family:inherit;font-size:12.5px;letter-spacing:.06em;background:var(--kami);
+  color:var(--ji);border:1px solid var(--kei);padding:5px 14px;cursor:pointer}
+button.act:hover{background:var(--hover);border-color:var(--ji-usu)}
+button.act:focus-visible{outline:2px solid var(--ai);outline-offset:1px}
+button.act.main{background:var(--ai);color:var(--main-fg);border-color:var(--ai)}
+button.act.main:hover{background:var(--main-h)}
+button.act.warn{color:var(--shu);border-color:var(--shu-kei)}
+button.act.warn:hover{background:var(--shu-usu)}
+button.act:disabled{opacity:.4;cursor:default}
+button.act.sm{font-size:11.5px;padding:3px 10px}
+
+.yakushoku{border:1px solid var(--kei);background:var(--shiro);padding:11px 16px;margin-bottom:16px;
+  display:flex;flex-wrap:wrap;gap:8px 34px;align-items:baseline}
+.yakushoku .set{display:flex;gap:9px;align-items:baseline}
+.yakushoku .lb{font-size:11.5px;color:var(--ji-usu)}
+.yakushoku .vl{font-family:"游明朝","Yu Mincho",serif;font-size:16px}
+.yakushoku .vl.mitei{color:var(--ji-usu);font-size:14px}
+
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 9px;text-align:left;vertical-align:middle}
+thead th{font-weight:600;font-size:11.5px;color:var(--ji-usu);border-bottom:1px solid var(--ji);white-space:nowrap;letter-spacing:.06em}
+tbody td{border-bottom:1px solid var(--kei-usu)}
+tbody tr:last-child td{border-bottom:1px solid var(--kei)}
+tbody tr:hover td{background:var(--hover)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.ctr,th.ctr{text-align:center}
+.kaikyu{white-space:nowrap}
+.kaikyu.kanbu{font-weight:600}
+tr.off td{color:var(--ji-usu)}
+.mark-shu{color:var(--shu);font-weight:600}
+.row-warn td{background:var(--shu-usu)}
+tr.grp td{background:var(--grp);border-bottom:1px solid var(--kei);font-size:11.5px;color:var(--ji-usu);letter-spacing:.08em}
+
+/* 暦 */
+.koyomi-hd{display:flex;align-items:baseline;gap:14px;margin-bottom:10px;flex-wrap:wrap}
+.koyomi-hd .tsuki{font-family:"游明朝","Yu Mincho",serif;font-size:19px;letter-spacing:.06em}
+.koyomi{border-collapse:collapse;width:100%;table-layout:fixed}
+.koyomi th{border:0;border-bottom:1px solid var(--ji);text-align:center;font-size:11.5px;padding:4px 0}
+.koyomi th.nichi{color:var(--shu)} .koyomi th.do{color:var(--ji-usu)}
+.koyomi td{border:1px solid var(--kei-usu);height:74px;vertical-align:top;padding:3px 4px}
+.koyomi td.mukan{background:var(--mukan)}
+.koyomi .hi{font-size:11.5px;color:var(--ji-usu);font-variant-numeric:tabular-nums}
+.koyomi td.nichi .hi{color:var(--shu)} .koyomi td.do .hi{color:var(--ji-usu)}
+.koyomi td.kyo{outline:2px solid var(--ai);outline-offset:-2px}
+.koyomi td.kyo .hi{font-weight:700;color:var(--ai)}
+.fuda{display:block;width:100%;text-align:left;margin-top:2px;padding:2px 5px;cursor:pointer;
+  background:var(--grp);color:var(--ji);border:0;border-left:3px solid var(--ji);
+  font-family:inherit;font-size:10.5px;line-height:1.45;letter-spacing:.02em}
+.fuda:hover{background:var(--grp-h)}
+.fuda:focus-visible{outline:2px solid var(--ai);outline-offset:1px}
+.fuda .jikoku{color:var(--ji-usu)}
+.mitei-box{border:1px solid var(--shu);background:var(--shu-usu);padding:8px 14px;margin-top:12px;font-size:12px}
+
+.plan td:first-child{white-space:nowrap;font-family:"游明朝","Yu Mincho",serif;font-size:14px}
+.plan .gun{white-space:nowrap;font-size:12px}
+.jyoubun{font-size:11.5px;color:var(--ji-usu);line-height:1.9;margin:14px 0 0;padding-left:1em;text-indent:-1em}
+.tsugi{border:1px solid var(--ai);background:var(--shiro);padding:10px 16px;margin-bottom:16px;
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.tsugi .lb{font-size:11.5px;color:var(--ji-usu)}
+.tsugi .vl{font-family:"游明朝","Yu Mincho",serif;font-size:17px}
+
+/* 出席簿 */
+.hanrei{font-size:11.5px;color:var(--ji-usu);margin:0 0 12px;display:flex;flex-wrap:wrap;gap:4px 18px}
+.ikkatsu{border:1px solid var(--kei);background:var(--shiro);padding:10px 14px;margin-bottom:14px;
+  display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.ikkatsu.on{border-color:var(--sel-kei);background:var(--sel)}
+.ikkatsu .lb{font-size:12px;color:var(--ji-usu)}
+.ikkatsu .kazu{font-family:"游明朝","Yu Mincho",serif;font-size:16px}
+.ikkatsu select{width:auto;min-width:116px}
+
+.deki{border-collapse:collapse;width:auto;min-width:100%}
+.deki th,.deki td{border:1px solid var(--kei-usu);padding:0}
+.deki thead th{border-bottom:1px solid var(--ji);padding:4px 6px;text-align:center;font-size:11px;line-height:1.4;min-width:66px}
+.deki thead th.hdr-name{text-align:left;padding-left:9px;min-width:190px}
+.deki thead th .d{display:block;color:var(--ji);font-size:12px}
+.deki thead th .s{display:block;color:var(--ji-usu);font-size:10px}
+.deki td.name{padding:3px 9px;white-space:nowrap;border-right:1px solid var(--kei)}
+.deki td.name label{display:flex;align-items:center;gap:7px;cursor:pointer}
+.deki tr.grp td{padding:3px 9px;text-align:left}
+.deki tr.grp label{display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+.deki col.selcol{background:var(--sel)}
+.deki tr.selrow td.name{background:var(--sel)}
+.masu{width:100%;height:30px;border:0;background:none;cursor:pointer;font-family:inherit;
+  font-size:14px;line-height:1;color:var(--ji);text-align:center;text-align-last:center;padding:0 2px}
+.masu:hover{background:var(--hover)}
+.masu:focus-visible{outline:2px solid var(--ai);outline-offset:-2px}
+.masu[data-m="×"]{color:var(--shu);font-weight:700}
+.masu[data-m="△"]{color:var(--ji-usu)}
+.masu[data-m=""]{color:var(--kei)}
+.scroll{overflow-x:auto;border-left:1px solid var(--kei);border-right:1px solid var(--kei)}
+input[type=checkbox]{width:auto;accent-color:var(--ji);margin:0}
+
+label.fld{display:block;margin-bottom:11px}
+label.fld > span{display:block;font-size:11.5px;color:var(--ji-usu);margin-bottom:3px}
+input[type=text],input[type=date],input[type=time],input[type=number],select{
+  font-family:inherit;font-size:13px;width:100%;padding:5px 8px;border:1px solid var(--kei);
+  background:var(--shiro);color:var(--ji)}
+input:focus,select:focus{outline:2px solid var(--ai);outline-offset:-1px;border-color:var(--ai)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+
+dialog{border:1px solid var(--ji);background:var(--kami);padding:0;width:min(520px,92vw);color:var(--ji)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog .dlg-hd{border-bottom:1px solid var(--kei);padding:14px 20px}
+dialog .dlg-hd h3{margin:0;font-size:15px;letter-spacing:.08em}
+dialog .dlg-bd{padding:16px 20px}
+dialog .dlg-ft{border-top:1px solid var(--kei);padding:12px 20px;display:flex;gap:8px;justify-content:flex-end}
+
+.empty{padding:30px 0;text-align:center;color:var(--ji-usu);font-size:13px}
+.empty p{margin:0 0 12px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:26px;background:var(--toast-bg);
+  color:var(--toast-fg);font-size:12.5px;padding:9px 20px;letter-spacing:.06em;opacity:0;
+  pointer-events:none;transition:opacity .18s;z-index:10}
+#toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+@media (max-width:720px){
+  .hd,main{padding-left:14px;padding-right:14px}
+  .grid2{grid-template-columns:1fr}
+  .tab{padding:8px 11px 10px;font-size:12.5px}
+  .tab-sep{margin:6px 5px 8px}
+  .koyomi td{height:58px}
+  .fuda{font-size:9.5px}
+  .deki thead th.hdr-name{min-width:150px}
+}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="hd-in">
+    <div class="hd-top">
+      <div>
+        <h1>外務課儀仗隊　隊務管理</h1>
+        <p class="sub">隊員名簿・訓練日程・出欠記録　／　外務課儀仗隊規則に基づく</p>
+      </div>
+      <button class="act sm" id="btn-theme" title="明暗を切り替える">夜間表示</button>
+    </div>
+    <div class="tabs" id="tabs" role="tablist"></div>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<dialog id="dlg">
+  <form method="dialog">
+    <div class="dlg-hd"><h3 id="dlg-title">隊員を追加</h3></div>
+    <div class="dlg-bd">
+      <div class="grid2">
+        <label class="fld"><span>Robloxユーザー名</span><input type="text" id="i-roblox" required></label>
+        <label class="fld"><span>Discordユーザー名</span><input type="text" id="i-discord"></label>
+      </div>
+      <div class="grid2">
+        <label class="fld"><span>職位</span>
+          <select id="i-shokui">
+            <option>儀仗隊長</option><option>儀仗副長</option><option>儀仗高官</option>
+            <option>小隊長</option><option>副小隊長</option><option selected>隊員</option>
+          </select></label>
+        <label class="fld"><span>所属</span><select id="i-squad"></select></label>
+      </div>
+      <label class="fld" style="max-width:calc(50% - 8px)"><span>状態</span>
+        <select id="i-jotai"><option selected>在隊</option><option>休隊</option><option>除隊</option></select></label>
+      <p id="dlg-gun" style="margin:2px 0 0;font-size:11.5px;color:var(--ji-usu)"></p>
+    </div>
+    <div class="dlg-ft">
+      <button class="act" value="cancel" type="submit">取り消す</button>
+      <button class="act main" value="ok" type="submit">保存する</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-kai">
+  <form method="dialog">
+    <div class="dlg-hd"><h3 id="kai-title">訓練回を追加</h3></div>
+    <div class="dlg-bd">
+      <div class="grid2">
+        <label class="fld"><span>実施日</span><input type="date" id="k-date"></label>
+        <label class="fld"><span>開始時刻</span><input type="time" id="k-time" value="21:00"></label>
+      </div>
+      <label class="fld"><span>訓練種目</span>
+        <select id="k-shumoku"><option>隊列形成訓練</option><option>行進訓練</option>
+          <option>携行・号令訓練</option><option>総合訓練</option></select></label>
+      <p style="margin:2px 0 0;font-size:11.5px;color:var(--ji-usu)">実施日は空欄のままでもよい。日付未定として扱う。</p>
+    </div>
+    <div class="dlg-ft">
+      <button class="act" value="cancel" type="submit">取り消す</button>
+      <button class="act main" value="ok" type="submit">保存する</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-ikkatsu">
+  <form method="dialog">
+    <div class="dlg-hd"><h3>日程を一括で組む</h3></div>
+    <div class="dlg-bd">
+      <div class="grid2">
+        <label class="fld"><span>初回の実施日</span><input type="date" id="p-date"></label>
+        <label class="fld"><span>開始時刻</span><input type="time" id="p-time" value="21:00"></label>
+      </div>
+      <label class="fld" style="max-width:calc(50% - 8px)"><span>作成する回数</span>
+        <input type="number" id="p-kai" value="8" min="1" max="52"></label>
+      <p style="margin:2px 0 0;font-size:11.5px;color:var(--ji-usu)">
+        初回の実施日から一週間ごとに作成する。種目は既存の回数から続けて四週で一巡させる。</p>
+    </div>
+    <div class="dlg-ft">
+      <button class="act" value="cancel" type="submit">取り消す</button>
+      <button class="act main" value="ok" type="submit">作成する</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+const KEIKO_OK=['儀仗隊長','儀仗副長','儀仗高官','小隊長','副小隊長'];  // 第十三条第一項
+const KANBU=['儀仗隊長','儀仗副長','儀仗高官','小隊長'];
+const HONBU=['儀仗隊長','儀仗副長','儀仗高官'];
+const SHUMOKU=['隊列形成訓練','行進訓練','携行・号令訓練','総合訓練'];
+const MARKS=['','○','△','×'];
+const MARK_NAME={'○':'出席','△':'欠席（届出あり）','×':'欠席（無断）','':'未記入'};
+const SORT_ORDER=['儀仗隊長','儀仗副長','儀仗高官','小隊長','副小隊長','隊員'];
+const MUDAN_KEIKOKU=3;
+const YOBI=['日','月','火','水','木','金','土'];
+const KIKAN_FUN=60;
+
+let S={squads:[],members:[],sessions:[],atd:{},pref:{}};
+let view={type:'kanbu'};
+let editingId=null, editingKai=null;
+let cal={y:0,m:0};
+let selRows=new Set(), selCols=new Set();
+
+const SEED_KANBU=[['SatuStarr','儀仗隊長'],['Koutan391','儀仗副長'],['jojo6mizu','儀仗高官'],['Okazaki840','儀仗高官']];
+const SEED_1=['Haru_H7','harusandesuyoo','sousage60','sakuramoti0048','MIKAZUKI681','Rikiyon_38291','daiki4654',
+  'yamatodamasi825','redghhe1qsf','Mynameislightgreen','Aoboran','Harutomanhero','uho0109','rinrin7yunyun7'];
+const SEED_2=['etctld674','aromarks','Atappi310','syunya_1016','46fes46','SkyFox_40','Neeeeekooodesu','NickNeon_Fox',
+  'horimoto190','t0224o0207','tmdpt_5','YAMATO5231','Marugemaruge','tsouta1221','GASSHOWd'];
+
+/* ═══ 保存 ═══ */
+const KEY='gishotai:v2';
+const hasStore=typeof window.storage!=='undefined'&&window.storage;
+async function load(){
+  if(!hasStore) return false;
+  try{const r=await window.storage.get(KEY); if(r&&r.value){S=JSON.parse(r.value);return true;}}catch(e){}
+  return false;
+}
+let saveTimer=null;
+function save(){
+  if(!hasStore) return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    try{await window.storage.set(KEY,JSON.stringify(S));}
+    catch(e){toast('保存できなかった。JSONで控えを残すこと。');}
+  },400);
+}
+function migrate(){
+  S.pref ||= {};
+  for(const m of S.members) delete m.zaiseki;
+  for(const s of S.sessions) if(!s.time) s.time='21:00';
+}
+
+/* ═══ 小道具 ═══ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+let toastTimer;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('on'),2600);}
+const canGun=m=>KEIKO_OK.includes(m.shokui);
+const isKanbu=m=>KANBU.includes(m.shokui);
+const sortMembers=(a,b)=>(SORT_ORDER.indexOf(a.shokui)-SORT_ORDER.indexOf(b.shokui))||a.roblox.localeCompare(b.roblox,'ja');
+const inSquad=id=>S.members.filter(m=>m.squad===id).sort(sortMembers);
+const zaitai=l=>l.filter(m=>m.jotai==='在隊');
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseYmd=s=>{const[y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d);};
+const dated=()=>S.sessions.filter(s=>s.date).sort((a,b)=>a.date.localeCompare(b.date));
+
+/* ═══ 明暗 ═══ */
+function applyTheme(){
+  const dark=S.pref.theme==='dark';
+  document.documentElement.dataset.theme=dark?'dark':'light';
+  $('#btn-theme').textContent=dark?'昼間表示':'夜間表示';
+}
+$('#btn-theme').addEventListener('click',()=>{
+  S.pref.theme=S.pref.theme==='dark'?'light':'dark';
+  applyTheme(); save();
+});
+
+/* ═══ タブ ═══ */
+function renderTabs(){
+  let h=`<button class="tab" role="tab" data-v="kanbu" aria-selected="${view.type==='kanbu'}">幹部職</button>`;
+  for(const sq of S.squads)
+    h+=`<button class="tab" role="tab" data-v="squad" data-id="${sq.id}" aria-selected="${view.type==='squad'&&view.id===sq.id}">${esc(sq.name)}</button>`;
+  h+=`<button class="tab shinsetsu" id="btn-shinsetsu">＋ 小隊</button><span class="tab-sep"></span>`;
+  for(const [k,l] of [['nittei','訓練日程'],['keikaku','訓練計画'],['shukketsu','出欠記録'],['shukei','集計'],['data','データ']])
+    h+=`<button class="tab" role="tab" data-v="${k}" aria-selected="${view.type===k}">${l}</button>`;
+  $('#tabs').innerHTML=h;
+}
+
+/* ═══ 名簿 ═══ */
+function memberTable(list){
+  return `<table><thead><tr><th class="num" style="width:36px">番</th><th>職位</th>
+    <th>Robloxユーザー名</th><th>Discord</th><th class="ctr">小銃</th><th>状態</th><th style="width:96px"></th>
+  </tr></thead><tbody>`+list.map((m,i)=>`<tr class="${m.jotai!=='在隊'?'off':''}">
+    <td class="num">${i+1}</td><td class="kaikyu ${isKanbu(m)?'kanbu':''}">${esc(m.shokui)}</td>
+    <td>${esc(m.roblox)}</td><td>${esc(m.discord)||'—'}</td>
+    <td class="ctr">${canGun(m)?'可':'—'}</td><td>${esc(m.jotai)}</td>
+    <td style="text-align:right;white-space:nowrap">
+      <button class="act sm" data-edit="${m.id}">編集</button>
+      <button class="act sm warn" data-del="${m.id}">削除</button></td></tr>`).join('')+`</tbody></table>`;
+}
+function viewKanbu(){
+  const list=inSquad(''),z=zaitai(list);
+  return `<section class="sheet"><h2>幹部職</h2>
+    <p class="note">本部付の職位を置く。儀仗隊長は外務課長をもって充てる（規則第五条第二項）。</p>
+    <div class="bar"><button class="act main" data-add="">隊員を追加</button><span class="spacer"></span>
+      <span class="tally">在隊 ${z.length}名　／　小銃携行者 ${z.filter(canGun).length}名</span></div>
+    ${list.length?memberTable(list):`<div class="empty"><p>本部付の隊員がいない。</p><button class="act" data-add="">隊員を追加する</button></div>`}
+  </section>`;
+}
+function viewSquad(id){
+  const sq=S.squads.find(s=>s.id===id);
+  if(!sq){view={type:'kanbu'};return viewKanbu();}
+  const list=inSquad(id),z=zaitai(list);
+  const yaku=(lb,m)=>`<span class="set"><span class="lb">${lb}</span>${m?`<span class="vl">${esc(m.roblox)}</span>`:`<span class="vl mitei">未定</span>`}</span>`;
+  return `<section class="sheet"><h2>${esc(sq.name)}</h2>
+    <p class="note">小隊長は小隊を統率し、小隊員の動作及び服装を監督する（規則第七条第三項）。</p>
+    <div class="yakushoku">${yaku('小隊長',z.find(m=>m.shokui==='小隊長'))}${yaku('副小隊長',z.find(m=>m.shokui==='副小隊長'))}
+      <span class="set"><span class="lb">在隊</span><span class="vl">${z.length}名</span></span>
+      <span class="set"><span class="lb">小銃携行者</span><span class="vl">${z.filter(canGun).length}名</span></span></div>
+    <div class="bar"><button class="act main" data-add="${id}">隊員を追加</button><span class="spacer"></span>
+      <button class="act sm" data-rename="${id}">小隊名を変更</button>
+      <button class="act sm warn" data-delsq="${id}">小隊を廃止</button></div>
+    ${list.length?memberTable(list):`<div class="empty"><p>${esc(sq.name)}に隊員がいない。</p><button class="act" data-add="${id}">隊員を追加する</button></div>`}
+  </section>`;
+}
+
+/* ═══ 訓練日程 ═══ */
+function renderKoyomi(){
+  const {y,m}=cal;
+  const lead=new Date(y,m,1).getDay(), lastDay=new Date(y,m+1,0).getDate();
+  const todayStr=ymd(new Date());
+  const byDate={};
+  for(const s of S.sessions) if(s.date) (byDate[s.date] ||= []).push(s);
+  const tds=[];
+  for(let i=0;i<lead;i++) tds.push(`<td class="mukan"></td>`);
+  for(let d=1;d<=lastDay;d++){
+    const key=`${y}-${pad(m+1)}-${pad(d)}`, w=new Date(y,m,d).getDay();
+    const cls=[w===0?'nichi':'',w===6?'do':'',key===todayStr?'kyo':''].filter(Boolean).join(' ');
+    const fuda=(byDate[key]||[]).map(s=>{
+      const i=S.sessions.indexOf(s);
+      return `<button class="fuda" data-kai="${s.id}" title="第${i+1}回 ${esc(s.shumoku)}　押すと変更できる">${esc(s.shumoku.replace('訓練',''))}<span class="jikoku"> ${esc(s.time||'')}</span></button>`;
+    }).join('');
+    tds.push(`<td class="${cls}"><span class="hi">${d}</span>${fuda}</td>`);
+  }
+  while(tds.length%7) tds.push(`<td class="mukan"></td>`);
+  let rows='';
+  for(let i=0;i<tds.length;i+=7) rows+=`<tr>${tds.slice(i,i+7).join('')}</tr>`;
+  return `<table class="koyomi"><thead><tr>${YOBI.map((w,i)=>`<th class="${i===0?'nichi':i===6?'do':''}">${w}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+function viewNittei(){
+  const ds=dated(), mitei=S.sessions.filter(s=>!s.date);
+  const next=ds.find(s=>s.date>=ymd(new Date()));
+  const list=S.sessions.length
+    ? `<table><thead><tr><th>回</th><th>実施日</th><th>時刻</th><th>訓練種目</th><th style="width:210px"></th></tr></thead><tbody>`+
+      S.sessions.map((s,i)=>`<tr><td class="num">${i+1}</td>
+        <td>${s.date?esc(s.date)+`（${YOBI[parseYmd(s.date).getDay()]}）`:'<span style="color:var(--shu)">未定</span>'}</td>
+        <td>${esc(s.time||'—')}</td><td>${esc(s.shumoku)}</td>
+        <td style="text-align:right;white-space:nowrap">
+          ${s.date?`<a class="act sm" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${gcalUrl(s,i)}">カレンダーに追加</a>`:''}
+          <button class="act sm" data-kai="${s.id}">変更</button>
+          <button class="act sm warn" data-kaidel="${s.id}">削除</button></td></tr>`).join('')+`</tbody></table>`
+    : `<div class="empty"><p>訓練回がまだ無い。日程を組む。</p><button class="act main" id="btn-ikkatsu">日程を一括で組む</button></div>`;
+  return `<section class="sheet"><h2>訓練日程</h2>
+    <p class="note">日程は儀仗隊長が定める（規則第十四条第二項）。実施頻度は週一回。</p>
+    ${next?`<div class="tsugi"><span class="lb">次回</span>
+      <span class="vl">${esc(next.date)}（${YOBI[parseYmd(next.date).getDay()]}）${esc(next.time||'')}</span>
+      <span class="lb">${esc(next.shumoku)}</span></div>`:''}
+    <div class="bar"><button class="act main" id="btn-ikkatsu">日程を一括で組む</button>
+      <button class="act" id="btn-kai">訓練回を追加</button><span class="spacer"></span>
+      <button class="act" id="btn-ics">カレンダーに取り込む（.ics）</button></div>
+    <div class="koyomi-hd"><button class="act sm" id="cal-prev">前の月</button>
+      <span class="tsuki">${cal.y}年 ${cal.m+1}月</span>
+      <button class="act sm" id="cal-next">次の月</button>
+      <button class="act sm" id="cal-today">今月</button></div>
+    ${renderKoyomi()}
+    ${mitei.length?`<div class="mitei-box">実施日が未定の回が ${mitei.length}回ある。下の一覧から日付を入れること。</div>`:''}
+    <h3 class="sub-h">日程一覧</h3>${list}</section>`;
+}
+function icsStamp(s){return (s.date||'').replace(/-/g,'')+'T'+String(s.time||'21:00').replace(':','')+'00';}
+function addMin(date,time,min){
+  const d=parseYmd(date); const[h,mi]=String(time||'21:00').split(':').map(Number);
+  d.setHours(h,mi+min,0,0);
+  return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+}
+function gcalUrl(s,i){
+  const p=new URLSearchParams({action:'TEMPLATE',text:`儀仗隊 第${i+1}回 ${s.shumoku}`,
+    dates:`${icsStamp(s)}/${addMin(s.date,s.time,KIKAN_FUN)}`,
+    details:'外務課儀仗隊 定期訓練（規則第十四条）',ctz:'Asia/Tokyo'});
+  return 'https://calendar.google.com/calendar/render?'+p.toString();
+}
+function exportIcs(){
+  const ds=dated();
+  if(!ds.length){toast('実施日が入った訓練回が無い。');return;}
+  const n=new Date();
+  const stamp=`${n.getUTCFullYear()}${pad(n.getUTCMonth()+1)}${pad(n.getUTCDate())}T${pad(n.getUTCHours())}${pad(n.getUTCMinutes())}${pad(n.getUTCSeconds())}Z`;
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Gishotai//Training//JA','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:外務課儀仗隊 定期訓練'];
+  for(const s of ds){
+    const i=S.sessions.indexOf(s);
+    L.push('BEGIN:VEVENT',`UID:${s.id}@gishotai`,`DTSTAMP:${stamp}`,`DTSTART:${icsStamp(s)}`,
+      `DTEND:${addMin(s.date,s.time,KIKAN_FUN)}`,`SUMMARY:儀仗隊 第${i+1}回 ${s.shumoku}`,
+      'DESCRIPTION:外務課儀仗隊 定期訓練（規則第十四条）','END:VEVENT');
+  }
+  L.push('END:VCALENDAR');
+  download('儀仗隊_訓練日程.ics',L.join('\r\n'),'text/calendar;charset=utf-8');
+  toast(`${ds.length}件の訓練回を書き出した。カレンダーに取り込める。`);
+}
+
+/* ═══ 訓練計画 ═══ */
+function viewKeikaku(){
+  const n=S.sessions.length;
+  const rows=[['第一週','隊列形成訓練','整列、番号、間隔の確保、気を付け・休めの姿勢、方向転換の基本','なし'],
+    ['第二週','行進訓練','歩調の統一、前進・停止、方向変換、隊列を保持した行進','なし'],
+    ['第三週','携行・号令訓練','儀仗用小銃の携行姿勢及び基本動作、号令の発声、号令に対する動作','携行者のみ'],
+    ['第四週','総合訓練','第一週から第三週までの通し、隊列展示、栄誉礼の形式','携行者のみ']]
+    .map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="gun">${r[3]}</td></tr>`).join('');
+  return `<section class="sheet"><h2>定期訓練実施計画</h2>
+    <p class="note">実施頻度は週一回。四週で一巡する。</p>
+    <div class="tsugi"><span class="lb">次に組む種目</span><span class="vl">${SHUMOKU[n%4]}</span>
+      <span class="lb">${n===0?'訓練回がまだ無いため、第一週から始まる':`第${n}回まで組んであるため、第${(n%4)+1}週にあたる`}</span></div>
+    <table class="plan"><thead><tr><th>週</th><th>訓練種目</th><th>主な内容</th><th class="gun">小銃携行</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="jyoubun">一　隊員は、正当な理由なく訓練を欠席してはならない（規則第十四条第三項）。</p>
+    <p class="jyoubun">二　無断欠席は、服務上の禁止事項に該当する（規則第十七条第三号）。</p>
+    <p class="jyoubun">三　欠席するときは、あらかじめ小隊長を経て儀仗隊長へ届け出る（同条第四項）。</p>
+    <p class="jyoubun">四　第三週は、携行者と非携行者に分けて実施する。</p></section>`;
+}
+
+/* ═══ 出欠記録 ═══ */
+function groupedMembers(){
+  const g=[]; const k=zaitai(inSquad('')); if(k.length) g.push(['',{name:'本部付',list:k}]);
+  for(const sq of S.squads){const l=zaitai(inSquad(sq.id)); if(l.length) g.push([sq.id,{name:sq.name,list:l}]);}
+  return g;
+}
+function allShown(){ return groupedMembers().flatMap(g=>g[1].list); }
+function selectionCounts(){
+  const mem=allShown();
+  const rows = selRows.size ? mem.filter(m=>selRows.has(m.id)) : mem;
+  const cols = selCols.size ? S.sessions.filter(s=>selCols.has(s.id)) : S.sessions;
+  return {rows,cols,n:rows.length*cols.length,explicit:selRows.size||selCols.size};
+}
+function viewShukketsu(){
+  const groups=groupedMembers(), cols=S.sessions.length;
+  const legend=`<p class="hanrei"><span>○ 出席</span><span>△ 欠席（届出あり）</span><span>× 欠席（無断）</span><span>・ 未記入</span></p>`;
+  if(!cols) return `<section class="sheet"><h2>出欠記録</h2>${legend}
+    <div class="empty"><p>訓練回がまだ無い。訓練日程の画面で日程を組む。</p></div></section>`;
+  if(!groups.length) return `<section class="sheet"><h2>出欠記録</h2>${legend}
+    <div class="empty"><p>在隊の隊員がいない。先に名簿を整える。</p></div></section>`;
+
+  const c=selectionCounts();
+  const colgroup=`<colgroup><col>${S.sessions.map(s=>`<col class="${selCols.has(s.id)?'selcol':''}">`).join('')}</colgroup>`;
+  const head=`<tr><th class="hdr-name">隊員名</th>`+S.sessions.map((s,i)=>
+    `<th><label style="display:block;cursor:pointer"><input type="checkbox" data-col="${s.id}" ${selCols.has(s.id)?'checked':''}>
+      <span class="d">第${i+1}回</span></label><span class="s">${esc(s.date||'未定')}</span>
+      <span class="s">${esc(s.shumoku.replace('訓練',''))}</span></th>`).join('')+`</tr>`;
+
+  let rows='';
+  for(const [sid,g] of groups){
+    const allSel=g.list.every(m=>selRows.has(m.id));
+    rows+=`<tr class="grp"><td colspan="${cols+1}"><label>
+      <input type="checkbox" data-grp="${sid}" ${allSel?'checked':''}>${esc(g.name)}　${g.list.length}名</label></td></tr>`;
+    rows+=g.list.map(m=>{
+      const sel=selRows.has(m.id);
+      return `<tr class="${sel?'selrow':''}"><td class="name"><label>
+        <input type="checkbox" data-row="${m.id}" ${sel?'checked':''}>
+        <span>${esc(m.roblox)}<span style="color:var(--ji-usu);font-size:11px">　${esc(m.shokui)}</span></span></label></td>`+
+        S.sessions.map((s,i)=>{
+          const v=(S.atd[s.id]||{})[m.id]||'';
+          return `<td><select class="masu" data-m="${v}" data-s="${s.id}" data-mem="${m.id}"
+            title="${esc(m.roblox)}／第${i+1}回：${MARK_NAME[v]}">`+
+            MARKS.map(k=>`<option value="${k}" ${k===v?'selected':''}>${k||'・'}</option>`).join('')+
+            `</select></td>`;
+        }).join('')+`</tr>`;
+    }).join('');
+  }
+  const all=allShown();
+  const sums=S.sessions.map(s=>{
+    const a=S.atd[s.id]||{};
+    const o=all.filter(m=>a[m.id]==='○').length, x=all.filter(m=>a[m.id]==='×').length;
+    return `<td style="text-align:center;font-size:11.5px;padding:5px 2px">出 ${o}<br><span class="${x?'mark-shu':''}">無 ${x}</span></td>`;
+  }).join('');
+
+  return `<section class="sheet"><h2>出欠記録</h2>
+    <p class="note">枡のドロップダウンで一人ずつ入れる。左と上のチェックで範囲を選ぶと、まとめて入れられる。</p>
+    ${legend}
+    <div class="ikkatsu ${c.explicit?'on':''}">
+      <span class="lb">対象</span>
+      <span class="kazu">${c.rows.length}名 × ${c.cols.length}回 = ${c.n}枡</span>
+      <span class="lb">${c.explicit?'':'（何も選んでいないため全体が対象）'}</span>
+      <span class="spacer"></span>
+      <select id="bulk-mark" style="width:auto">
+        <option value="○">○ 出席</option><option value="△">△ 欠席（届出あり）</option>
+        <option value="×">× 欠席（無断）</option><option value="">・ 未記入に戻す</option>
+      </select>
+      <button class="act main" id="btn-bulk" ${c.n?'':'disabled'}>まとめて入れる</button>
+      <button class="act" id="btn-selclear" ${c.explicit?'':'disabled'}>選択を解除</button>
+    </div>
+    <div class="scroll"><table class="deki">${colgroup}<thead>${head}</thead><tbody>${rows}</tbody>
+      <tfoot><tr><td class="name" style="font-size:11.5px;color:var(--ji-usu)">出席／無断欠席</td>${sums}</tr></tfoot>
+    </table></div></section>`;
+}
+
+/* ═══ 集計 ═══ */
+function tally(m){
+  let o=0,t=0,x=0;
+  for(const s of S.sessions){const v=(S.atd[s.id]||{})[m.id]||'';
+    if(v==='○')o++;else if(v==='△')t++;else if(v==='×')x++;}
+  const b=o+t+x; return {o,t,x,b,ritsu:b?o/b:null};
+}
+function viewShukei(){
+  const groups=groupedMembers();
+  if(!S.sessions.length||!groups.length)
+    return `<section class="sheet"><h2>出欠集計</h2><div class="empty"><p>集計できる記録がまだ無い。</p></div></section>`;
+  let rows='';
+  for(const [,g] of groups){
+    rows+=`<tr class="grp"><td colspan="7">${esc(g.name)}</td></tr>`;
+    rows+=g.list.map(m=>{const t=tally(m),w=t.x>=MUDAN_KEIKOKU;
+      return `<tr class="${w?'row-warn':''}"><td class="kaikyu ${isKanbu(m)?'kanbu':''}">${esc(m.shokui)}</td>
+        <td>${esc(m.roblox)}</td><td class="num">${t.o}</td><td class="num">${t.t}</td>
+        <td class="num ${t.x?'mark-shu':''}">${t.x}</td>
+        <td class="num">${t.ritsu===null?'—':(t.ritsu*100).toFixed(1)+'%'}</td>
+        <td style="font-size:11.5px;color:var(--shu)">${w?`無断欠席が${t.x}回。規則第十七条第三号に該当する。`:''}</td></tr>`;}).join('');
+  }
+  return `<section class="sheet"><h2>出欠集計</h2>
+    <p class="note">出席率は「出席 ÷（出席＋届出欠席＋無断欠席）」で算出する。未記入の回は母数に含めない。</p>
+    <table><thead><tr><th>職位</th><th>Robloxユーザー名</th><th class="num">出席</th><th class="num">届出欠席</th>
+      <th class="num">無断欠席</th><th class="num">出席率</th><th></th></tr></thead><tbody>${rows}</tbody></table></section>`;
+}
+
+/* ═══ データ ═══ */
+function viewData(){
+  const z=zaitai(S.members);
+  return `<section class="sheet"><h2>データ</h2>
+    <p class="note">${hasStore?'この環境では自動保存が効いている。':'この環境では自動保存が効かない。JSONで控えを残すこと。'}</p>
+    <div class="bar">
+      <button class="act" id="btn-csv">出欠記録をCSVで書き出す</button>
+      <button class="act" id="btn-meibo-csv">名簿をCSVで書き出す</button>
+      <button class="act" id="btn-ics2">訓練日程を.icsで書き出す</button>
+      <button class="act" id="btn-json">データを保存（JSON）</button>
+      <button class="act" id="btn-load">データを読み込む</button>
+      <input type="file" id="file-json" accept=".json" hidden></div>
+    <table><thead><tr><th>区分</th><th class="num">数</th></tr></thead><tbody>
+      <tr><td>小隊</td><td class="num">${S.squads.length}</td></tr>
+      <tr><td>在隊者</td><td class="num">${z.length}</td></tr>
+      <tr><td>うち幹部職</td><td class="num">${z.filter(isKanbu).length}</td></tr>
+      <tr><td>うち小銃携行者</td><td class="num">${z.filter(canGun).length}</td></tr>
+      <tr><td>訓練回（うち日付あり）</td><td class="num">${S.sessions.length}（${dated().length}）</td></tr>
+    </tbody></table></section>`;
+}
+
+/* ═══ 描画 ═══ */
+function render(){
+  renderTabs();
+  const v=view.type;
+  $('#main').innerHTML =
+    v==='squad'?viewSquad(view.id): v==='nittei'?viewNittei(): v==='keikaku'?viewKeikaku():
+    v==='shukketsu'?viewShukketsu(): v==='shukei'?viewShukei(): v==='data'?viewData(): viewKanbu();
+}
+function pruneSelection(){
+  const ids=new Set(allShown().map(m=>m.id)), sids=new Set(S.sessions.map(s=>s.id));
+  for(const r of [...selRows]) if(!ids.has(r)) selRows.delete(r);
+  for(const c of [...selCols]) if(!sids.has(c)) selCols.delete(c);
+}
+
+/* ═══ 記入欄 ═══ */
+function fillSquadOptions(sel){
+  $('#i-squad').innerHTML=`<option value="">本部付</option>`+S.squads.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  $('#i-squad').value=sel||'';
+}
+function updateGunNote(){
+  const v=$('#i-shokui').value;
+  $('#dlg-gun').textContent=KEIKO_OK.includes(v)
+    ?'この職位は儀仗用小銃を携行できる（規則第十三条第一項）。':'この職位は儀仗用小銃を携行できない。';
+}
+function openDlg(m,preset){
+  editingId=m?m.id:null;
+  $('#dlg-title').textContent=m?'隊員を編集':'隊員を追加';
+  $('#i-roblox').value=m?m.roblox:''; $('#i-discord').value=m?m.discord:'';
+  $('#i-shokui').value=m?m.shokui:'隊員';
+  fillSquadOptions(m?m.squad:(preset||''));
+  $('#i-jotai').value=m?m.jotai:'在隊';
+  updateGunNote(); $('#dlg').showModal(); $('#i-roblox').focus();
+}
+$('#i-shokui').addEventListener('change',updateGunNote);
+$('#dlg').addEventListener('close',()=>{
+  if($('#dlg').returnValue!=='ok') return;
+  const roblox=$('#i-roblox').value.trim();
+  if(!roblox){toast('Robloxユーザー名が空欄になっている。');return;}
+  const d={roblox,discord:$('#i-discord').value.trim(),shokui:$('#i-shokui').value,
+    squad:$('#i-squad').value,jotai:$('#i-jotai').value};
+  if(HONBU.includes(d.shokui)&&d.squad!==''){d.squad='';toast('この職位は本部付に置いた。');}
+  if(editingId){Object.assign(S.members.find(m=>m.id===editingId),d);toast(roblox+' の記録を更新した。');}
+  else{S.members.push({id:uid(),...d});toast(roblox+' を名簿に加えた。');}
+  pruneSelection(); save(); render();
+});
+function openKai(s){
+  editingKai=s?s.id:null;
+  $('#kai-title').textContent=s?`第${S.sessions.indexOf(s)+1}回を変更`:'訓練回を追加';
+  $('#k-date').value=s?s.date:''; $('#k-time').value=s?(s.time||'21:00'):'21:00';
+  $('#k-shumoku').value=s?s.shumoku:SHUMOKU[S.sessions.length%4];
+  $('#dlg-kai').showModal();
+}
+$('#dlg-kai').addEventListener('close',()=>{
+  if($('#dlg-kai').returnValue!=='ok') return;
+  const d={date:$('#k-date').value,time:$('#k-time').value||'21:00',shumoku:$('#k-shumoku').value};
+  if(editingKai){Object.assign(S.sessions.find(s=>s.id===editingKai),d);toast('訓練回を変更した。');}
+  else{const id=uid();S.sessions.push({id,...d});S.atd[id]={};toast('訓練回を追加した。');}
+  if(d.date){const t=parseYmd(d.date);cal={y:t.getFullYear(),m:t.getMonth()};}
+  save(); render();
+});
+$('#dlg-ikkatsu').addEventListener('close',()=>{
+  if($('#dlg-ikkatsu').returnValue!=='ok') return;
+  const start=$('#p-date').value, time=$('#p-time').value||'21:00', n=Number($('#p-kai').value);
+  if(!start){toast('初回の実施日が空欄になっている。');return;}
+  if(!(n>=1&&n<=52)){toast('回数は1から52の間で入れること。');return;}
+  const base=S.sessions.length, d0=parseYmd(start);
+  for(let i=0;i<n;i++){
+    const d=new Date(d0); d.setDate(d0.getDate()+7*i);
+    const id=uid(); S.sessions.push({id,date:ymd(d),time,shumoku:SHUMOKU[(base+i)%4]}); S.atd[id]={};
+  }
+  cal={y:d0.getFullYear(),m:d0.getMonth()};
+  toast(`${n}回分の日程を組んだ。`); save(); render();
+});
+
+/* ═══ 操作 ═══ */
+$('#tabs').addEventListener('click',e=>{
+  const b=e.target.closest('.tab'); if(!b) return;
+  if(b.id==='btn-shinsetsu'){
+    const n=prompt('新設する小隊の名称を入れる。','第'+['一','二','三','四','五','六','七','八','九','十'][S.squads.length]+'小隊');
+    if(n===null) return;
+    const name=n.trim();
+    if(!name){toast('名称が空欄になっている。');return;}
+    if(S.squads.some(s=>s.name===name)){toast('同じ名称の小隊がすでにある。');return;}
+    const id=uid(); S.squads.push({id,name}); view={type:'squad',id};
+    toast(name+' を新設した。'); save(); render(); return;
+  }
+  view=b.dataset.v==='squad'?{type:'squad',id:b.dataset.id}:{type:b.dataset.v};
+  render();
+});
+
+$('#main').addEventListener('click',e=>{
+  const t=e.target;
+  const add=t.closest('[data-add]'),ed=t.closest('[data-edit]'),dl=t.closest('[data-del]');
+  const rn=t.closest('[data-rename]'),ds=t.closest('[data-delsq]');
+  const kai=t.closest('[data-kai]'),kdel=t.closest('[data-kaidel]');
+
+  if(add){openDlg(null,add.dataset.add);return;}
+  if(ed){openDlg(S.members.find(m=>m.id===ed.dataset.edit));return;}
+  if(dl){
+    const m=S.members.find(x=>x.id===dl.dataset.del);
+    if(!confirm(`${m.roblox} を名簿から削除する。出欠の記録も消える。`))return;
+    S.members=S.members.filter(x=>x.id!==m.id);
+    for(const k of Object.keys(S.atd)) delete S.atd[k][m.id];
+    pruneSelection(); toast(m.roblox+' を削除した。'); save(); render(); return;
+  }
+  if(rn){
+    const sq=S.squads.find(s=>s.id===rn.dataset.rename);
+    const n=prompt('小隊の名称を変更する。',sq.name); if(n===null)return;
+    const name=n.trim();
+    if(!name){toast('名称が空欄になっている。');return;}
+    if(S.squads.some(s=>s.name===name&&s.id!==sq.id)){toast('同じ名称の小隊がすでにある。');return;}
+    sq.name=name; toast('名称を変更した。'); save(); render(); return;
+  }
+  if(ds){
+    const sq=S.squads.find(s=>s.id===ds.dataset.delsq), n=inSquad(sq.id).length;
+    if(n){toast(`${sq.name}に${n}名が所属している。先に他の小隊へ移すこと。`);return;}
+    if(!confirm(`${sq.name} を廃止する。`))return;
+    S.squads=S.squads.filter(s=>s.id!==sq.id); view={type:'kanbu'};
+    toast(sq.name+' を廃止した。'); save(); render(); return;
+  }
+  if(kdel){
+    const s=S.sessions.find(x=>x.id===kdel.dataset.kaidel), i=S.sessions.indexOf(s);
+    if(!confirm(`第${i+1}回（${s.date||'日付未定'} ${s.shumoku}）を削除する。その回の出欠も消える。`))return;
+    S.sessions=S.sessions.filter(x=>x.id!==s.id); delete S.atd[s.id];
+    pruneSelection(); toast('訓練回を削除した。'); save(); render(); return;
+  }
+  if(kai){openKai(S.sessions.find(s=>s.id===kai.dataset.kai));return;}
+
+  if(t.closest('#btn-ikkatsu')){ if(!$('#p-date').value) $('#p-date').value=ymd(new Date()); $('#dlg-ikkatsu').showModal(); return; }
+  if(t.closest('#btn-kai')){openKai(null);return;}
+  if(t.closest('#cal-prev')){cal.m--;if(cal.m<0){cal.m=11;cal.y--;}render();return;}
+  if(t.closest('#cal-next')){cal.m++;if(cal.m>11){cal.m=0;cal.y++;}render();return;}
+  if(t.closest('#cal-today')){const d=new Date();cal={y:d.getFullYear(),m:d.getMonth()};render();return;}
+  if(t.closest('#btn-ics')||t.closest('#btn-ics2')) return exportIcs();
+
+  if(t.closest('#btn-bulk')){
+    const mark=$('#bulk-mark').value, c=selectionCounts();
+    if(!c.n){toast('対象が無い。');return;}
+    if(c.n>=50 && !confirm(`${c.n}枡に「${mark||'未記入'}」を入れる。`)) return;
+    for(const s of c.cols){
+      S.atd[s.id] ||= {};
+      for(const m of c.rows){
+        if(mark) S.atd[s.id][m.id]=mark; else delete S.atd[s.id][m.id];
+      }
+    }
+    toast(`${c.n}枡に「${mark?MARK_NAME[mark]:'未記入'}」を入れた。`);
+    save(); render(); return;
+  }
+  if(t.closest('#btn-selclear')){selRows.clear();selCols.clear();render();return;}
+
+  if(t.closest('#btn-csv')) return exportAttendance();
+  if(t.closest('#btn-meibo-csv')) return exportRoster();
+  if(t.closest('#btn-json')){download('儀仗隊_隊務データ.json',JSON.stringify(S,null,2),'application/json');toast('データを書き出した。');return;}
+  if(t.closest('#btn-load')) return $('#file-json').click();
+});
+
+$('#main').addEventListener('change',e=>{
+  const t=e.target;
+
+  if(t.classList.contains('masu')){
+    const v=t.value;
+    (S.atd[t.dataset.s] ||= {})[t.dataset.mem]=v;
+    if(!v) delete S.atd[t.dataset.s][t.dataset.mem];
+    t.dataset.m=v; t.title=t.title.replace(/：.*$/,'：'+MARK_NAME[v]);
+    save(); return;
+  }
+  if(t.dataset.row){ t.checked?selRows.add(t.dataset.row):selRows.delete(t.dataset.row); render(); return; }
+  if(t.dataset.col){ t.checked?selCols.add(t.dataset.col):selCols.delete(t.dataset.col); render(); return; }
+  if(t.dataset.grp!==undefined){
+    const g=groupedMembers().find(x=>x[0]===t.dataset.grp);
+    if(g) for(const m of g[1].list) t.checked?selRows.add(m.id):selRows.delete(m.id);
+    render(); return;
+  }
+  if(t.id==='file-json'){
+    const f=t.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        const d=JSON.parse(r.result);
+        if(!Array.isArray(d.members)||!Array.isArray(d.squads)) throw 0;
+        S={squads:d.squads,members:d.members,sessions:d.sessions||[],atd:d.atd||{},pref:d.pref||S.pref};
+        migrate(); applyTheme(); selRows.clear(); selCols.clear();
+        view={type:'kanbu'}; save(); render(); toast('データを読み込んだ。');
+      }catch(err){ toast('読み込めなかった。このアプリで書き出したJSONを選ぶこと。'); }
+      t.value='';
+    };
+    r.readAsText(f);
+  }
+});
+
+/* ═══ 書き出し ═══ */
+function download(name,text,type){
+  const url=URL.createObjectURL(new Blob([text],{type}));
+  const a=Object.assign(document.createElement('a'),{href:url,download:name});
+  a.click(); URL.revokeObjectURL(url);
+}
+const csvify=rows=>'\uFEFF'+rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
+function exportRoster(){
+  const rows=[['所属','職位','Robloxユーザー名','Discord','小銃携行','状態']];
+  for(const [name,list] of [['本部付',inSquad('')],...S.squads.map(s=>[s.name,inSquad(s.id)])])
+    for(const m of list) rows.push([name,m.shokui,m.roblox,m.discord,canGun(m)?'可':'不可',m.jotai]);
+  download('儀仗隊_隊員名簿.csv',csvify(rows),'text/csv;charset=utf-8'); toast('名簿を書き出した。');
+}
+function exportAttendance(){
+  const rows=[['所属','職位','Robloxユーザー名',
+    ...S.sessions.map((s,i)=>`第${i+1}回 ${s.date||''} ${s.shumoku}`),'出席','届出欠席','無断欠席','出席率']];
+  for(const [,g] of groupedMembers())
+    for(const m of g.list){const t=tally(m);
+      rows.push([g.name,m.shokui,m.roblox,...S.sessions.map(s=>(S.atd[s.id]||{})[m.id]||''),
+        t.o,t.t,t.x,t.ritsu===null?'':(t.ritsu*100).toFixed(1)+'%']);}
+  download('儀仗隊_出欠記録.csv',csvify(rows),'text/csv;charset=utf-8'); toast('出欠記録を書き出した。');
+}
+
+/* ═══ 起動 ═══ */
+(async function init(){
+  const ok=await load();
+  if(!ok||!S.members||!S.members.length){
+    const s1=uid(),s2=uid();
+    S={squads:[{id:s1,name:'第一小隊'},{id:s2,name:'第二小隊'}],members:[],sessions:[],atd:{},pref:{}};
+    const mk=(roblox,shokui,squad)=>S.members.push({id:uid(),roblox,discord:'',shokui,squad,jotai:'在隊'});
+    SEED_KANBU.forEach(([r,sh])=>mk(r,sh,''));
+    SEED_1.forEach(r=>mk(r,'隊員',s1));
+    SEED_2.forEach(r=>mk(r,'隊員',s2));
+    save();
+  }
+  migrate();
+  if(!S.pref.theme) S.pref.theme = matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  applyTheme();
+  const d=new Date(); cal={y:d.getFullYear(),m:d.getMonth()};
+  render();
+  if(!hasStore) toast('この環境では自動保存が効かない。データ画面からJSONで控えを残すこと。');
+})();
+</script>
+</body>
+</html>
